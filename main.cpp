@@ -21,8 +21,7 @@ using std::cerr;
 #define STOP_ON_ERROR   0x08
 
 int main(int argc, char **argv) {
-    void Gather(string starting_folder, vector<string> &, uint32_t &);
-    void Remove(vector<string> &);
+    void FindAndRemove(string starting_folder, uint32_t &);
     void HandleOptions(int, char **, uint32_t &, string &);
     string Initialize(string);
     void PrintHelp();
@@ -35,8 +34,7 @@ int main(int argc, char **argv) {
     try {
         HandleOptions(argc, argv, options, starting_folder);
         starting_folder = Initialize(starting_folder);
-		Gather(starting_folder, paths, options);
-		Remove(paths);
+		FindAndRemove(starting_folder, options);
 	} catch (string e) {
         if (e == "help") {
             PrintHelp();
@@ -113,7 +111,7 @@ string Tail(std::string const & src, size_t const length) {
 	return src.substr(src.size() - length);
 }
 
-void Gather(string starting_folder, vector<string> & collected_paths, uint32_t & options) {
+void FindAndRemove(string starting_folder, uint32_t & options) {
     DIR * sfolder = opendir(starting_folder.c_str());
     dirent * current_object = nullptr;
     
@@ -157,12 +155,9 @@ void Gather(string starting_folder, vector<string> & collected_paths, uint32_t &
                     continue;
             }
 			string next_folder = starting_folder + "/" + current_object->d_name;
-            Gather(next_folder, collected_paths, options);
+            FindAndRemove(next_folder, options);
             chdir("..");
 		}
 	}
 	closedir(sfolder);
-}
-
-void Remove(vector<string> & collected_paths) {
 }

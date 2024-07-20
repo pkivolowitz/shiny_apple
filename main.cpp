@@ -1,3 +1,6 @@
+/*  Shiny Apple - shines up your Apple development environment.
+    Copyright 2024 - Perry Kivolowitz
+*/
 #include <iostream>
 #include <dirent.h>
 #include <cassert>
@@ -19,11 +22,12 @@ using std::cerr;
 #define DEL_A_OUT       0x02
 #define DEL_DOT_D       0x04
 #define STOP_ON_ERROR   0x08
+#define BE_QUIET        0x10
 
 int main(int argc, char **argv) {
-    void FindAndRemove(string starting_folder, uint32_t &);
+    void FindAndRemove(const string starting_folder, const uint32_t &);
     void HandleOptions(int, char **, uint32_t &, string &);
-    string Initialize(string);
+    string Initialize(const string);
     void PrintHelp();
 
     vector<string> paths;
@@ -48,13 +52,15 @@ int main(int argc, char **argv) {
 	return retval;
 }
 
-string Initialize(string starting_folder) {
+string Initialize(const string starting_folder) {
     char buffer[PATH_MAX];
 
     if (chdir(starting_folder.c_str())) {
 		throw string("Failed to open folder: ") + starting_folder;
     }
-    getcwd(buffer, PATH_MAX);
+    if (!getcwd(buffer, PATH_MAX)) {
+        throw "getcwd() improbably failed on: " + starting_folder;
+    }
     return string(buffer);
 }
 
@@ -69,16 +75,21 @@ void PrintHelp() {
     cout << "-o       delete .o files\n";
     cout << "-f path  set starting path - default is cwd\n";
 	cout << "-h       print this help\n";
+    cout << "-q       be quiet - supress printouts\n";
     cout << "-s       stop on errors otherwise keep going\n";
 }
 
 void HandleOptions(int argc, char **argv, uint32_t & options, string & starting_folder) {
     int c;
 
-    while ((c = getopt(argc, argv, "adhosf:")) != -1) {
+    while ((c = getopt(argc, argv, "qadhosf:")) != -1) {
         switch(c) {
             case 'h':
                 throw string("help");
+                break;
+
+            case 'q':
+                options |= BE_QUIET;
                 break;
 
             case 's':
@@ -111,7 +122,7 @@ string Tail(std::string const & src, size_t const length) {
 	return src.substr(src.size() - length);
 }
 
-void FindAndRemove(string starting_folder, uint32_t & options) {
+void FindAndRemove(const string starting_folder, const uint32_t & options) {
     DIR * sfolder = opendir(starting_folder.c_str());
     dirent * current_object = nullptr;
     
@@ -137,17 +148,21 @@ void FindAndRemove(string starting_folder, uint32_t & options) {
 				do_unlink = true;
 			}
             if (do_unlink) {
-    			cout << "Deleting file:      " << fname << endl;
+    			if (!(options & BE_QUIET)) {
+                    cout << "Deleting file:      " << fname << endl;
+                }
 	    		if (unlink(fname.c_str()) && options & STOP_ON_ERROR) {
                     throw "Deletion of " + fname + " failed";
                 }
             }
 		} else if (current_object->d_type == DT_DIR) {
             if (Tail(string(current_object->d_name), 5) == ".dSYM") {
-			    cout << "Deleting directory: " << fname << endl;
-                fname = "rm -rf " + fname;
-			    if (system(fname.c_str()) && options & STOP_ON_ERROR) {
-                    throw "Deletion of " + fname + " failed";
+				if (!(options & BE_QUIET)) {
+					cout << "Deleting directory: " << fname << endl;
+                }
+				fname = "rm -rf " + fname;
+				if (system(fname.c_str()) && options & STOP_ON_ERROR) {
+					throw "Deletion of " + fname + " failed";
                 }
                 continue;
             } else if (string(current_object->d_name) == "." ||
@@ -156,8 +171,8 @@ void FindAndRemove(string starting_folder, uint32_t & options) {
             }
 			string next_folder = starting_folder + "/" + current_object->d_name;
             FindAndRemove(next_folder, options);
-            chdir("..");
+            (void) chdir("..");
 		}
 	}
-	closedir(sfolder);
+	(void) closedir(sfolder);
 }

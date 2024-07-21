@@ -131,16 +131,17 @@ void FindAndRemove(const string starting_folder, const uint32_t & options) {
 
     while ((current_object = readdir(sfolder)) != nullptr) {
 		string fname = starting_folder + "/" + current_object->d_name;
+        string cname = string(current_object->d_name);
 
         if (current_object->d_type == DT_REG) {
             bool do_unlink = false;
-            if (options & DEL_DOT_OHS && Tail(string(current_object->d_name), 2) == ".o") {
+            if (options & DEL_DOT_OHS && Tail(cname, 2) == ".o") {
                 do_unlink = true;
 			}
-			if (options & DEL_DOT_OHS && Tail(string(current_object->d_name), 2) == ".d") {
+			if (options & DEL_DOT_OHS && Tail(cname, 2) == ".d") {
 				do_unlink = true;
 			}
-			if (options & DEL_DOT_OHS && string(current_object->d_name) == "a.out") {
+			if (options & DEL_DOT_OHS && cname == "a.out") {
 				do_unlink = true;
 			}
             if (do_unlink) {
@@ -152,7 +153,7 @@ void FindAndRemove(const string starting_folder, const uint32_t & options) {
                 }
             }
 		} else if (current_object->d_type == DT_DIR) {
-            if (Tail(string(current_object->d_name), 5) == ".dSYM") {
+            if (Tail(cname, 5) == ".dSYM") {
 				if (!(options & BE_QUIET)) {
 					cout << "Deleting directory: " << fname << endl;
                 }
@@ -161,8 +162,7 @@ void FindAndRemove(const string starting_folder, const uint32_t & options) {
 					throw "Deletion of " + fname + " failed";
                 }
                 continue;
-            } else if (string(current_object->d_name) == "." ||
-				   string(current_object->d_name) == "..") {
+            } else if (cname == "." || cname == "..") {
                     continue;
             }
 			string next_folder = starting_folder + "/" + current_object->d_name;

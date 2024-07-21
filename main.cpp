@@ -4,15 +4,12 @@
 #include <iostream>
 #include <dirent.h>
 #include <cassert>
-#include <vector>
-#include <thread>
 #include <string>
 #include <getopt.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <limits.h>
 
-using std::vector;
 using std::string;
 using std::cout;
 using std::endl;
@@ -30,7 +27,6 @@ int main(int argc, char **argv) {
     string Initialize(const string);
     void PrintHelp();
 
-    vector<string> paths;
     string starting_folder = ".";
     int retval = 0;
     uint32_t options = 0;

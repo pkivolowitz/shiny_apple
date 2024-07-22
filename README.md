@@ -2,7 +2,7 @@
 
 This command line tool will recursively search from a specified folder
 looking for the leavings of compilers on the Apple platform. It cleans
-up and shines your Apple development environment.
+and shines your Apple development environment.
 
 Specifically the following:
 

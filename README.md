@@ -27,5 +27,7 @@ The -s option, if given, causes the program to abort upon encountering
 an error such as not being able to delete a target due to permissions.
 If -s is not given, the program will continue despite any errors.
 
+The -A options is equivalent to specifying -o -d -a.
+
 By default, the program prints a statement about each file or directory
 it deletes. If the -q option is given, this printing is supressed.

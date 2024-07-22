@@ -111,7 +111,7 @@ void HandleOptions(int argc, char **argv, uint32_t & options, string & starting_
     }
 }
 
-string Tail(std::string const & src, size_t const length) {
+string Tail(string const & src, size_t const length) {
 	if (length >= src.size()) {
 		return "";
 	}

@@ -73,12 +73,13 @@ void PrintHelp() {
 	cout << "-h       print this help\n";
     cout << "-q       be quiet - supress printouts\n";
     cout << "-s       stop on errors otherwise keep going\n";
+    cout << "-A       removes all it can - equivalent to -a -d -o\n";
 }
 
 void HandleOptions(int argc, char **argv, uint32_t & options, string & starting_folder) {
     int c;
 
-    while ((c = getopt(argc, argv, "qadhosf:")) != -1) {
+    while ((c = getopt(argc, argv, "Aqadhosf:")) != -1) {
         switch(c) {
             case 'h':
                 throw string("help");
@@ -104,6 +105,10 @@ void HandleOptions(int argc, char **argv, uint32_t & options, string & starting_
 				options |= DEL_DOT_OHS;
                 break;
 
+            case 'A':
+                options |= (DEL_A_OUT | DEL_DOT_D | DEL_DOT_OHS);
+                break;
+                
             case 'f':
                 starting_folder = string(optarg);
                 break;
@@ -111,7 +116,9 @@ void HandleOptions(int argc, char **argv, uint32_t & options, string & starting_
     }
 }
 
-string Tail(string const & src, size_t const length) {
+/*  Adapted from Internet source. Didn't want to implement this again!
+*/
+string Tail(string & src, size_t length) {
 	if (length >= src.size()) {
 		return "";
 	}
@@ -162,7 +169,8 @@ void FindAndRemove(const string starting_folder, const uint32_t & options) {
 					throw "Deletion of " + fname + " failed";
                 }
                 continue;
-            } else if (cname == "." || cname == "..") {
+            }
+            if (cname == "." || cname == "..") {
                     continue;
             }
 			string next_folder = starting_folder + "/" + current_object->d_name;
